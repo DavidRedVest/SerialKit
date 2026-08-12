@@ -1,0 +1,8 @@
+{
+  "name": "serialkit",
+  "version": "0.1.0",
+  "dependencies": [
+    "qtbase",
+    "qtserialport"
+  ]
+}

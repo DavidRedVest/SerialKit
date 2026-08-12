@@ -1,0 +1,48 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Prebuilt Qt binaries instead of building qtbase from source via
+      # vcpkg: vcpkg's qtbase port compiles Qt itself, which is
+      # impractically slow for CI. vcpkg.json is still the source of truth
+      # for non-Qt dependencies added later (e.g. the M2 libvterm overlay
+      # port); Qt itself is provisioned here instead.
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.8.*"
+          modules: "qtserialport"
+          cache: true
+
+      - name: Install Linux GUI build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-cursor0
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      # Only the headless unit tests (RingBuffer, IFrameStrategy) run in CI;
+      # they link Qt6::Core + Qt6::Test only, so no display/xvfb is needed.
+      # The GUI app is built (to catch compile breakage) but not launched.
+      - name: Run headless unit tests
+        run: ctest --test-dir build --output-on-failure -C Release
