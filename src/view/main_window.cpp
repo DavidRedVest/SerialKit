@@ -17,6 +17,10 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#ifndef SERIALKIT_VERSION
+#define SERIALKIT_VERSION "0.0.0-dev"
+#endif
+
 namespace serialkit {
 
 namespace {
@@ -44,7 +48,7 @@ MainWindow::MainWindow(QWidget* parent)
       m_multiLineSend(new MultiLineSend(this)),
       m_macroToggleButton(new QPushButton(tr("▸ Macros"), this)),
       m_macroPanel(new MacroPanel(this)) {
-    setWindowTitle(tr("SerialKit"));
+    setWindowTitle(tr("SerialKit v%1").arg(QStringLiteral(SERIALKIT_VERSION)));
 
     m_baudSelector->setEditable(true);
     for (const int baud : kCommonBaudRates) {

@@ -44,6 +44,10 @@ add_library(serialkit_ui STATIC
     view/main_window.cpp
 )
 target_link_libraries(serialkit_ui PUBLIC serialkit_headless Qt6::Widgets)
+# Single source of truth for the version shown in the window title
+# (MainWindow) is PROJECT_VERSION, set once in the root CMakeLists.txt --
+# not duplicated as a separate literal here.
+target_compile_definitions(serialkit_ui PRIVATE SERIALKIT_VERSION="${PROJECT_VERSION}")
 
 set(SERIALKIT_APP_SOURCES main.cpp)
 
@@ -76,8 +80,8 @@ if(APPLE)
     MACOSX_BUNDLE_ICON_FILE ${SERIALKIT_ICON_NAME}
     MACOSX_BUNDLE_GUI_IDENTIFIER "io.serialkit.app"
     MACOSX_BUNDLE_BUNDLE_NAME "SerialKit"
-    MACOSX_BUNDLE_BUNDLE_VERSION "0.1.0"
-    MACOSX_BUNDLE_SHORT_VERSION_STRING "0.1.0"
+    MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
     MACOSX_BUNDLE_COPYRIGHT "SerialKit"
   )
 endif()
