@@ -7,6 +7,7 @@
 #include "send/multi_line_send.h"
 #include "transport/serial_transport.h"
 #include "view/hex_view.h"
+#include "view/terminal_view.h"
 
 #include <QComboBox>
 #include <QGroupBox>
@@ -14,6 +15,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QStatusBar>
+#include <QTabWidget>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -24,9 +26,9 @@
 namespace serialkit {
 
 namespace {
-const QList<int> kCommonBaudRates = {1200,   2400,   4800,   9600,   19200,
-                                      38400,  57600,  115200, 230400, 460800,
-                                      921600, 1000000};
+const QList<int> kCommonBaudRates = {1200,   2400,    4800,    9600,   19200,
+                                      38400,  57600,   115200,  230400, 460800,
+                                      921600, 1000000, 1500000};
 const QList<int> kDataBitsOptions = {5, 6, 7, 8};
 const QStringList kParityOptions = {"None", "Odd", "Even", "Mark", "Space"};
 const QStringList kStopBitsOptions = {"1", "1.5", "2"};
@@ -45,6 +47,7 @@ MainWindow::MainWindow(QWidget* parent)
       m_statusLabel(new QLabel(tr("Disconnected"), this)),
       m_byteCountLabel(new QLabel(this)),
       m_hexView(new HexView(this)),
+      m_terminalView(new TerminalView(this)),
       m_multiLineSend(new MultiLineSend(this)),
       m_macroToggleButton(new QPushButton(tr("▸ Macros"), this)),
       m_macroPanel(new MacroPanel(this)) {
@@ -86,7 +89,20 @@ MainWindow::MainWindow(QWidget* parent)
     topLayout->addWidget(m_stopBitsSelector);
     topLayout->addWidget(m_connectButton);
 
-    auto* receiveGroup = new QGroupBox(tr("Receive"), this);
+    // Hex and Terminal are two views over the same raw byte stream (see
+    // docs/ARCHITECTURE.md M2 section), not two exclusive data sources --
+    // both stay attached to the session and keep updating regardless of
+    // which tab is in front, so switching tabs never loses data. What
+    // differs per tab is purely how much UI chrome that mode needs: Hex
+    // mode drives the port from the Send box below it, Terminal mode is
+    // driven by typing directly into the terminal, so its page has no Send
+    // area at all and gets the full page height instead.
+    auto* hexPage = new QWidget(this);
+    auto* hexPageLayout = new QVBoxLayout(hexPage);
+    hexPageLayout->setContentsMargins(0, 0, 0, 0);
+    hexPageLayout->setSpacing(12);
+
+    auto* receiveGroup = new QGroupBox(tr("Receive"), hexPage);
     auto* receiveLayout = new QVBoxLayout(receiveGroup);
     receiveLayout->setSpacing(8);
     receiveLayout->addWidget(m_hexView);
@@ -96,20 +112,26 @@ MainWindow::MainWindow(QWidget* parent)
     macroToggleRow->addWidget(m_macroToggleButton);
     macroToggleRow->addStretch(1);
 
-    auto* sendGroup = new QGroupBox(tr("Send"), this);
+    auto* sendGroup = new QGroupBox(tr("Send"), hexPage);
     auto* sendLayout = new QVBoxLayout(sendGroup);
     sendLayout->setSpacing(10);
     sendLayout->addWidget(m_multiLineSend);
     sendLayout->addLayout(macroToggleRow);
     sendLayout->addWidget(m_macroPanel);
 
+    hexPageLayout->addWidget(receiveGroup, /*stretch=*/2);
+    hexPageLayout->addWidget(sendGroup, /*stretch=*/1);
+
+    auto* modeTabs = new QTabWidget(this);
+    modeTabs->addTab(hexPage, tr("Hex"));
+    modeTabs->addTab(m_terminalView, tr("Terminal"));
+
     auto* central = new QWidget(this);
     auto* mainLayout = new QVBoxLayout(central);
     mainLayout->setContentsMargins(12, 12, 12, 12);
     mainLayout->setSpacing(12);
     mainLayout->addWidget(topBar);
-    mainLayout->addWidget(receiveGroup, /*stretch=*/2);
-    mainLayout->addWidget(sendGroup, /*stretch=*/1);
+    mainLayout->addWidget(modeTabs, /*stretch=*/1);
     setCentralWidget(central);
 
     statusBar()->addWidget(m_statusLabel);
@@ -138,6 +160,7 @@ void MainWindow::refreshPorts() {
 void MainWindow::toggleConnection() {
     if (m_sessionManager->count() > 0) {
         m_hexView->attachSession(nullptr);
+        m_terminalView->attachSession(nullptr);
         m_multiLineSend->attachSession(nullptr);
         m_macroPanel->attachSession(nullptr);
         m_sessionManager->removeSession(0);
@@ -181,6 +204,7 @@ void MainWindow::toggleConnection() {
     });
 
     m_hexView->attachSession(session);
+    m_terminalView->attachSession(session);
     m_multiLineSend->attachSession(session);
     m_macroPanel->attachSession(session);
     setConnectedUiState(true);

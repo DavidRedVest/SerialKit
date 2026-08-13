@@ -8,6 +8,10 @@ cmake-build-*/
 CMakeLists.txt.user
 CMakeLists.txt.user.*
 
+# Machine-specific CMake presets (e.g. local Qt install path) -- see
+# CMakePresets.json / docs/ARCHITECTURE.md for why this file exists.
+CMakeUserPresets.json
+
 # Editor / language server caches
 .cache/
 .vscode/

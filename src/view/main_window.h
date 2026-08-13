@@ -15,12 +15,15 @@ class HexView;
 class MacroPanel;
 class MultiLineSend;
 class SessionManager;
+class TerminalView;
 
-// M1 top-level window: port picker + connect/disconnect, HexView, the send
-// box, macro panel. Wraps exactly one Session (SessionManager still
-// enforces the "list of sessions" shape so M3 can lift the length-1
-// restriction without touching this class's collaborators, only its own
-// connect/tab logic).
+// M1/M2 top-level window: port picker + connect/disconnect, then a
+// top-level Hex/Terminal tab widget -- Hex's page bundles Receive (HexView)
+// + Send (compose box, macro panel); Terminal's page is just TerminalView,
+// full height, no Send area (see docs/ARCHITECTURE.md "UI 交互约定").
+// Wraps exactly one Session (SessionManager still enforces the "list of
+// sessions" shape so M3 can lift the length-1 restriction without touching
+// this class's collaborators, only its own connect/tab logic).
 class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
@@ -52,6 +55,7 @@ private:
     qint64 m_txBytes = 0;
 
     HexView* m_hexView;
+    TerminalView* m_terminalView;
     MultiLineSend* m_multiLineSend;
     QPushButton* m_macroToggleButton;
     MacroPanel* m_macroPanel;

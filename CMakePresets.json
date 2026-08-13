@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "ninja",
+      "hidden": true,
+      "description": "Pins the generator to Ninja so terminal builds and VS Code's CMake Tools extension (which always requests -G Ninja) never disagree about build/'s cached generator -- see docs/ARCHITECTURE.md for the incident this fixes.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build"
+    }
+  ]
+}

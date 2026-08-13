@@ -31,11 +31,21 @@ target_link_libraries(serialkit_headless PUBLIC Qt6::Core Qt6::SerialPort)
 
 # serialkit_ui: QWidget-based views and the main window. Depends on
 # serialkit_headless for Session/RingBuffer/etc.
+#
+# terminal/vterm_engine.{h,cpp} doesn't itself need QWidget (it's a QObject
+# wrapper around the libvterm C API), but it has exactly one consumer
+# (terminal_view.cpp) and isn't unit-tested headlessly for M2, so it lives
+# here rather than justifying a third library tier -- see
+# docs/ARCHITECTURE.md M2 section.
 add_library(serialkit_ui STATIC
     view/app_style.h
     view/app_style.cpp
     view/hex_view.h
     view/hex_view.cpp
+    view/terminal_view.h
+    view/terminal_view.cpp
+    terminal/vterm_engine.h
+    terminal/vterm_engine.cpp
     send/multi_line_send.h
     send/multi_line_send.cpp
     send/macro_panel.h
@@ -43,7 +53,7 @@ add_library(serialkit_ui STATIC
     view/main_window.h
     view/main_window.cpp
 )
-target_link_libraries(serialkit_ui PUBLIC serialkit_headless Qt6::Widgets)
+target_link_libraries(serialkit_ui PUBLIC serialkit_headless Qt6::Widgets vterm_c)
 # Single source of truth for the version shown in the window title
 # (MainWindow) is PROJECT_VERSION, set once in the root CMakeLists.txt --
 # not duplicated as a separate literal here.
