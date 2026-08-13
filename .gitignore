@@ -31,3 +31,4 @@ Desktop.ini
 # Editor backups
 *~
 *.swp
+dist/
