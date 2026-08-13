@@ -39,8 +39,20 @@ public:
     qint64 write(const QByteArray& data) override;
 
     // Convenience for UI port pickers; not part of ITransport since it is
-    // serial-specific.
+    // serial-specific. Runs the raw QSerialPortInfo names through
+    // filterUsablePortNames() before returning them.
     static QStringList availablePortNames();
+
+    // Pulled out of availablePortNames() so the filtering rules can be unit
+    // tested with synthetic input, without depending on real hardware or
+    // QSerialPortInfo. On macOS, drops the tty.* "dial-in" twin of every
+    // cu.* "dial-out" device (tty.* blocks open() waiting for DCD, which is
+    // never what you want for a USB-serial debugging tool) and a small set
+    // of macOS-standard virtual ports (Bluetooth stack, Apple Silicon debug
+    // UART) that are never a real device to talk to. No-op on other
+    // platforms, where the cu/tty naming convention doesn't exist -- see
+    // docs/ARCHITECTURE.md "UI 交互约定".
+    static QStringList filterUsablePortNames(const QStringList& rawNames);
 
 private slots:
     void handleReadyRead();

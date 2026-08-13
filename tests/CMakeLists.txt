@@ -12,6 +12,10 @@ add_executable(test_send_encoding test_send_encoding.cpp)
 target_link_libraries(test_send_encoding PRIVATE serialkit_headless Qt6::Test)
 add_test(NAME test_send_encoding COMMAND test_send_encoding)
 
+add_executable(test_serial_transport test_serial_transport.cpp)
+target_link_libraries(test_serial_transport PRIVATE serialkit_headless Qt6::Test)
+add_test(NAME test_serial_transport COMMAND test_serial_transport)
+
 # VtermEngine lives in serialkit_ui (see src/CMakeLists.txt), not
 # serialkit_headless -- it's the sole consumer of vterm_c and isn't worth a
 # third library tier for M2. Linking against serialkit_ui pulls in

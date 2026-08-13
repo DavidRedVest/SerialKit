@@ -1,6 +1,7 @@
 #include "transport/serial_transport.h"
 
 #include <QSerialPortInfo>
+#include <QSet>
 
 namespace serialkit {
 
@@ -101,6 +102,37 @@ qint64 SerialTransport::write(const QByteArray& data) {
     return m_port->write(data);
 }
 
+#ifdef Q_OS_MACOS
+namespace {
+const QSet<QString>& hiddenMacPortNames() {
+    static const QSet<QString> names = {
+        QStringLiteral("cu.debug-console"),
+        QStringLiteral("cu.Bluetooth-Incoming-Port"),
+    };
+    return names;
+}
+} // namespace
+#endif
+
+QStringList SerialTransport::filterUsablePortNames(const QStringList& rawNames) {
+#ifdef Q_OS_MACOS
+    QStringList result;
+    result.reserve(rawNames.size());
+    for (const QString& name : rawNames) {
+        if (name.startsWith(QLatin1String("tty."))) {
+            continue;
+        }
+        if (hiddenMacPortNames().contains(name)) {
+            continue;
+        }
+        result.append(name);
+    }
+    return result;
+#else
+    return rawNames;
+#endif
+}
+
 QStringList SerialTransport::availablePortNames() {
     QStringList names;
     const auto infos = QSerialPortInfo::availablePorts();
@@ -108,7 +140,7 @@ QStringList SerialTransport::availablePortNames() {
     for (const auto& info : infos) {
         names.append(info.portName());
     }
-    return names;
+    return filterUsablePortNames(names);
 }
 
 void SerialTransport::handleReadyRead() {
