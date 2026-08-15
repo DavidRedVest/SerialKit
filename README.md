@@ -18,11 +18,16 @@
 - 键盘输入转发：方向键、Ctrl+字母组合、Backspace/Tab/Enter/Esc/Home/End/PageUp/PageDown
 - Terminal 字体缩放：`Ctrl/Cmd +` / `Ctrl/Cmd -` / `Ctrl/Cmd 0`，字号持久化保存
 
+**M3**：
+- 多会话/多 Tab：外层 `QTabWidget` 管理若干个 `SessionPanel`，每个 Tab 独立的连接、Hex/Terminal 视图、发送框、宏面板，"+" 新增、Tab 可关闭，默认预置 1 个 Tab
+- 原始日志开关：连接后可选文件开始/停止记录，落盘原始字节的十六进制 + 时间戳
+- macOS 端口选择列表过滤（延续自 M2）：只显示 `cu.*` 可用串口
+
 详细的架构决策、接口设计、每一条 UI 交互约定背后的原因（包括几次真实踩坑的教训），见 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)。
 
 ## 路线图
 
-M1、M2（当前）之后计划：原始日志与多会话（M3）、TCP/UDP 传输（M4）、波形视图与协议解码插件（M5）、脚本自动化引擎（M6）。里程碑范围定义见 `CLAUDE.md`。
+M1、M2、M3（当前）之后计划：TCP/UDP 传输（M4）、波形视图与协议解码插件（M5）、脚本自动化引擎（M6）。里程碑范围定义见 `CLAUDE.md`。
 
 ## 构建
 

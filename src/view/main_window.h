@@ -4,26 +4,22 @@
 #include <memory>
 
 QT_BEGIN_NAMESPACE
-class QComboBox;
-class QPushButton;
-class QLabel;
+class QTabWidget;
+class QToolButton;
 QT_END_NAMESPACE
 
 namespace serialkit {
 
-class HexView;
-class MacroPanel;
-class MultiLineSend;
 class SessionManager;
-class TerminalView;
+class SessionPanel;
 
-// M1/M2 top-level window: port picker + connect/disconnect, then a
-// top-level Hex/Terminal tab widget -- Hex's page bundles Receive (HexView)
-// + Send (compose box, macro panel); Terminal's page is just TerminalView,
-// full height, no Send area (see docs/ARCHITECTURE.md "UI 交互约定").
-// Wraps exactly one Session (SessionManager still enforces the "list of
-// sessions" shape so M3 can lift the length-1 restriction without touching
-// this class's collaborators, only its own connect/tab logic).
+// M3 top-level window: an outer QTabWidget of SessionPanel tabs, one per
+// open connection (see docs/ARCHITECTURE.md M3 section). Starts with one
+// tab pre-created so the single-connection experience from M1/M2 is
+// unchanged; the "+" corner button adds more. MainWindow itself owns only
+// SessionManager and outer-tab bookkeeping -- everything about a single
+// connection (port picker, Hex/Terminal views, send box, macros, raw
+// logging) lives in SessionPanel.
 class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
@@ -31,34 +27,14 @@ public:
     ~MainWindow() override;
 
 private slots:
-    void refreshPorts();
-    void toggleConnection();
-    void handleTransportError(const QString& message);
-    void toggleMacroPanel();
+    void addSessionTab();
+    void closeSessionTab(int index);
 
 private:
-    void setConnectedUiState(bool connected);
-    void updateByteCountLabel();
+    void updateTabLabel(SessionPanel* panel, const QString& label);
 
     std::unique_ptr<SessionManager> m_sessionManager;
-
-    QComboBox* m_portSelector;
-    QComboBox* m_baudSelector;
-    QComboBox* m_dataBitsSelector;
-    QComboBox* m_paritySelector;
-    QComboBox* m_stopBitsSelector;
-    QPushButton* m_refreshButton;
-    QPushButton* m_connectButton;
-    QLabel* m_statusLabel;
-    QLabel* m_byteCountLabel;
-    qint64 m_rxBytes = 0;
-    qint64 m_txBytes = 0;
-
-    HexView* m_hexView;
-    TerminalView* m_terminalView;
-    MultiLineSend* m_multiLineSend;
-    QPushButton* m_macroToggleButton;
-    MacroPanel* m_macroPanel;
+    QTabWidget* m_sessionTabs;
 };
 
 } // namespace serialkit

@@ -50,6 +50,8 @@ add_library(serialkit_ui STATIC
     send/multi_line_send.cpp
     send/macro_panel.h
     send/macro_panel.cpp
+    view/session_panel.h
+    view/session_panel.cpp
     view/main_window.h
     view/main_window.cpp
 )

@@ -1,5 +1,7 @@
 #include "core/session_manager.h"
 
+#include <algorithm>
+
 namespace serialkit {
 
 SessionManager::SessionManager(QObject* parent) : QObject(parent) {
@@ -18,6 +20,17 @@ void SessionManager::removeSession(int index) {
         return;
     }
     m_sessions.erase(m_sessions.begin() + index);
+    emit sessionRemoved(index);
+}
+
+void SessionManager::removeSession(Session* session) {
+    const auto it = std::find_if(m_sessions.begin(), m_sessions.end(),
+                                  [session](const std::unique_ptr<Session>& s) { return s.get() == session; });
+    if (it == m_sessions.end()) {
+        return;
+    }
+    const int index = static_cast<int>(std::distance(m_sessions.begin(), it));
+    m_sessions.erase(it);
     emit sessionRemoved(index);
 }
 

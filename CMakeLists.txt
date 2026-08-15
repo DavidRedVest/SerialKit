@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 # C is enabled alongside CXX starting M2: libvterm (cmake/Libvterm.cmake) is
 # a plain C99 library with no build system of its own.
-project(serialkit VERSION 0.2.1 LANGUAGES C CXX)
+project(serialkit VERSION 0.3.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
